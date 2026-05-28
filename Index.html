@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto IT - Gestión Corporativa</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * { 
+            font-family: 'Inter', sans-serif; 
+            box-sizing: border-box; 
+        }
+        body { 
+            background-color: #0b0f19; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden;
+        }
+        
+        /* Efecto Glassmorphism Premium */
+        .glass { 
+            background: rgba(15, 23, 42, 0.75); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06); 
+        }
+        .glass-light { 
+            background: rgba(30, 41, 59, 0.45); 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.04); 
+        }
+        
+        /* Navegación Activa */
+        .nav-active { 
+            background: linear-gradient(135deg, #2563eb, #4f46e5) !important; 
+            color: #ffffff !important; 
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.3);
+        }
+        
+        /* Animaciones fluidas */
+        .fade-in { 
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(12px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        .slide-in { 
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        }
+        @keyframes slideIn { 
+            from { opacity: 0; transform: scale(0.95); } 
+            to { opacity: 1; transform: scale(1); } 
+        }
+        
+        /* Animación del indicador de sincronización */
+        .pulse-dot { 
+            animation: pulse 2s infinite; 
+        }
+        @keyframes pulse { 
+            0%, 100% { opacity: 1; transform: scale(1); } 
+            50% { opacity: 0.4; transform: scale(0.9); } 
+        }
+        
+        .card-hover { 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .card-hover:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4); 
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        
+        .gradient-text { 
+            background: linear-gradient(135deg, #60a5fa, #a78bfa); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        
+        /* Badges de Categoría */
+        .cat-licitacion { border-left: 4px solid #a78bfa; }
+        .cat-interno { border-left: 4px solid #3b82f6; }
+        .cat-solucion { border-left: 4px solid #06b6d4; }
+        .cat-piloto { border-left: 4px solid #f59e0b; }
+        
+        /* Personalización de Scrollbars corporativas */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        .modal-overlay { 
+            background: rgba(3, 7, 18, 0.85); 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        input, select, textarea { 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        input:focus, select:focus, textarea:focus { 
+            outline: none; 
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); 
+        }
+        
+        #sidebar { 
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        #sidebar.collapsed { 
+            width: 0 !important; 
+            min-width: 0 !important; 
+            overflow: hidden; 
+            padding: 0; 
+            border: none; 
+        }
+        #sidebar.collapsed .sidebar-inner { 
+            opacity: 0; 
+            pointer-events: none; 
+        }
+        
+        .sidebar-inner { 
+            transition: opacity 0.2s ease; 
+        }
+        
+        @media (max-width: 767px) {
+            #sidebar { 
+                position: fixed !important; 
+                left: 0; 
+                top: 0; 
+                bottom: 0; 
+                z-index: 50; 
+                width: 280px !important; 
+                min-width: 280px; 
+            }
+            #sidebar.collapsed { 
+                transform: translateX(-100%); 
+            }
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden text-slate-100 antialiased">
+    <div id="app" class="flex h-full w-full">
+        <!-- Overlay Móvil -->
+        <div id="mobileOverlay" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-40 md:hidden"></div>
+
+        <!-- Sidebar / Panel de Navegación -->
+        <aside id="sidebar" class="w-64 glass flex-shrink-0 flex flex-col z-50 md:relative border-r border-slate-800">
+            <div class="sidebar-inner flex flex-col h-full">
+                <!-- Header Sidebar -->
+                <div class="p-5 border-b border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-900/30">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <h1 class="font-bold text-base tracking-tight gradient-text truncate">Proyecto IT</h1>
+                            <p class="text-xs text-slate-400">Gestión de Proyectos</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enlaces de Navegación -->
+                <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+                    <button onclick="App.navigate('dashboard')" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all" data-nav="dashboard">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"/></svg>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="App.navigate('projects')" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all" data-nav="projects">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                        <span>Proyectos</span>
+                    </button>
+                    <button onclick="App.navigate('new')" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/50 hover:text-white transition-all" data-nav="new">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>Nuevo Proyecto</span>
+                    </button>
+                </nav>
+
+                <!-- Panel de Estado -->
+                <div class="p-4 border-t border-slate-800">
+                    <div class="glass-light rounded-xl p-3.5">
+                        <div class="flex items-center gap-2.5 mb-1.5">
+                            <span class="pulse-dot w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                            <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Sincronización</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400" id="lastUpdate">Actualizado: ahora</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Area de Contenido Principal -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <!-- Header Global -->
+            <header class="glass border-b border-slate-800 px-6 py-4 flex items-center justify-between gap-4 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <button onclick="App.toggleSidebar()" class="hidden md:flex p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors" title="Colapsar Menú">
+                        <svg id="toggleArrow" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                    </button>
+                    <button onclick="App.openMobile()" class="md:hidden p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <h2 id="pageTitle" class="text-xl font-bold tracking-tight text-white truncate">Dashboard</h2>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <!-- Buscador Unificado -->
+                    <div class="relative w-40 sm:w-60 md:w-80">
+                        <input type="text" id="searchInput" placeholder="Buscar..." oninput="App.applyFilters()" class="w-full pl-9 pr-4 py-2 bg-slate-900/60 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500">
+                        <svg class="w-4 h-4 absolute left-3 top-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    
+                    <!-- Botón Búsqueda OneDrive Local -->
+                    <button onclick="App.openOneDriveSearch()" class="px-4 py-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-300 hover:text-white transition-all flex items-center gap-2 flex-shrink-0" title="Buscar proyectos con enlace a OneDrive">
+                      <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                      <span class="hidden sm:inline">OneDrive</span>
+                    </button>
+                    
+                    <!-- Botón de Registro Rápido -->
+                    <button onclick="App.navigate('new')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-semibold text-white shadow-lg shadow-blue-900/20 hover:shadow-blue-800/30 transition-all flex items-center gap-2 flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        <span class="hidden sm:inline">Nuevo Proyecto</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Contenedor de Vistas Scrolleable -->
+            <div id="contentArea" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+                
+                <!-- VISTA: DASHBOARD -->
+                <div id="view-dashboard" class="fade-in space-y-6">
+                    
+                    <!-- Tarjetas de Métricas Principales (KPIs) -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="glass rounded-2xl p-4 md:p-5 card-hover">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Proyectos</span>
+                                <div class="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                </div>
+                            </div>
+                            <p class="text-2xl md:text-3xl font-extrabold text-white" id="kpiTotal">0</p>
+                            <p class="text-[11px] text-slate-400 mt-1">Iniciativas bajo gestión TI</p>
+                        </div>
+                        <div class="glass rounded-2xl p-4 md:p-5 card-hover">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Abiertos</span>
+                                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                            </div>
+                            <p class="text-2xl md:text-3xl font-extrabold text-emerald-400" id="kpiAbiertos">0</p>
+                            <p class="text-[11px] text-slate-400 mt-1">Fase operativa activa</p>
+                        </div>
+                        <div class="glass rounded-2xl p-4 md:p-5 card-hover">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pendientes</span>
+                                <div class="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                            </div>
+                            <p class="text-2xl md:text-3xl font-extrabold text-amber-400" id="kpiPendientes">0</p>
+                            <p class="text-[11px] text-slate-400 mt-1">En espera de recursos o escalamiento</p>
+                        </div>
+                        <div class="glass rounded-2xl p-4 md:p-5 card-hover">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cerrados</span>
+                                <div class="w-9 h-9 rounded-xl bg-rose-500/10 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                            </div>
+                            <p class="text-2xl md:text-3xl font-extrabold text-rose-400" id="kpiCerrados">0</p>
+                            <p class="text-[11px] text-slate-400 mt-1">Iniciativas completadas con éxito</p>
+                        </div>
+                    </div>
+
+                    <!-- Gráficos -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass rounded-2xl p-5 flex flex-col h-[320px]">
+                            <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                                <span class="w-1.5 h-3 bg-blue-500 rounded-full"></span>Distribución por Estado Operativo
+                            </h3>
+                            <div class="flex-1 min-h-0 relative">
+                                <canvas id="chartEstado"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass rounded-2xl p-5 flex flex-col h-[320px]">
+                            <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                                <span class="w-1.5 h-3 bg-indigo-500 rounded-full"></span>Iniciativas por Categoría TI (Volumen)
+                            </h3>
+                            <div class="flex-1 min-h-0 relative">
+                                <canvas id="chartCategoria"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Matriz -->
+                    <div class="w-full">
+                        <div class="glass rounded-2xl p-5 flex flex-col h-[320px]">
+                            <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                                <span class="w-1.5 h-3 bg-cyan-500 rounded-full"></span>Matriz de Categorías × Estado
+                            </h3>
+                            <div class="flex-1 min-h-0 relative">
+                                <canvas id="chartDistribucion"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA: PORTAFOLIO DE PROYECTOS -->
+                <div id="view-projects" class="hidden fade-in space-y-4">
+                    <!-- Barra de Filtros -->
+                    <div class="glass rounded-2xl p-4 flex flex-wrap gap-3 items-center justify-between">
+                        <div class="flex flex-wrap gap-2.5 items-center">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-2">Filtros:</span>
+                            <select id="filterEstado" onchange="App.applyFilters()" class="px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-medium text-slate-300">
+                                <option value="">Todos los Estados</option>
+                                <option value="abierto">Abiertos</option>
+                                <option value="pendiente">Pendientes</option>
+                                <option value="cerrado">Cerrados</option>
+                            </select>
+                            <select id="filterCategoria" onchange="App.applyFilters()" class="px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-medium text-slate-300">
+                                <option value="">Todas las Categorías</option>
+                                <option value="licitacion">Licitaciones / RFP</option>
+                                <option value="interno">Proyectos Internos</option>
+                                <option value="solucion">Soluciones</option>
+                                <option value="piloto">Pilotos / PoC</option>
+                            </select>
+                        </div>
+                        <select id="filterOrden" onchange="App.applyFilters()" class="px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-medium text-slate-300 w-full sm:w-auto mt-2 sm:mt-0">
+                            <option value="fecha_desc">Más Recientes</option>
+                            <option value="fecha_asc">Más Antiguos</option>
+                            <option value="nombre_asc">Nombre A-Z</option>
+                            <option value="nombre_desc">Nombre Z-A</option>
+                        </select>
+                    </div>
+
+                    <!-- Tabla (Desktop) -->
+                    <div class="glass rounded-2xl overflow-hidden hidden md:block border border-slate-800">
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-sm text-left">
+                                <thead>
+                                    <tr class="border-b border-slate-800 bg-slate-900/40 text-slate-400 font-semibold text-xs tracking-wider uppercase">
+                                        <th class="px-6 py-4">Proyecto</th>
+                                        <th class="px-6 py-4">Categoría</th>
+                                        <th class="px-6 py-4">Estado</th>
+                                        <th class="px-6 py-4">Fecha Planificada</th>
+                                        <th class="px-6 py-4">Enlace</th>
+                                        <th class="px-6 py-4 text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="projectsTableBody" class="divide-y divide-slate-800/50"></tbody>
+                            </table>
+                        </div>
+                        <!-- Empty State Desktop -->
+                        <div id="noProjectsDesktop" class="hidden py-16 text-center">
+                            <svg class="w-16 h-16 mx-auto text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            <p class="text-slate-400 text-base font-semibold">No se encontraron resultados</p>
+                            <p class="text-slate-500 text-xs mt-1">Prueba limpiando o modificando los filtros aplicados</p>
+                        </div>
+                    </div>
+
+                    <!-- Tarjetas (Mobile) -->
+                    <div id="projectsCards" class="md:hidden space-y-4"></div>
+                    <!-- Empty State Mobile -->
+                    <div id="noProjectsMobile" class="hidden md:hidden py-16 text-center">
+                        <svg class="w-16 h-16 mx-auto text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                        <p class="text-slate-400 text-base font-semibold">No se encontraron resultados</p>
+                    </div>
+                </div>
+
+                <!-- VISTA: REGISTRO DE PROYECTO -->
+                <div id="view-new" class="hidden fade-in">
+                    <div class="max-w-3xl mx-auto">
+                        <div class="glass rounded-2xl p-6 md:p-8">
+                            <div class="flex items-center gap-3.5 mb-6">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-900/30">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">Ingresar Nueva Iniciativa</h3>
+                                    <p class="text-xs text-slate-400">Registra y asigna recursos al portafolio tecnológico</p>
+                                </div>
+                            </div>
+                            
+                            <form id="projectForm" onsubmit="return App.createProject(event)">
+                                <div class="space-y-5">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre del Proyecto <span class="text-rose-500">*</span></label>
+                                        <input type="text" id="projName" required placeholder="Ej: Implementación SD-WAN Sucursales" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600">
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Fecha Planificada <span class="text-rose-500">*</span></label>
+                                            <input type="date" id="projDate" required class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Estado de Avance <span class="text-rose-500">*</span></label>
+                                            <select id="projStatus" required class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200">
+                                                <option value="">Seleccionar</option>
+                                                <option value="abierto">Abierto</option>
+                                                <option value="pendiente">Pendiente</option>
+                                                <option value="cerrado">Cerrado</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Categoría TI <span class="text-rose-500">*</span></label>
+                                        <select id="projCategory" required class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200">
+                                            <option value="">Seleccionar</option>
+                                            <option value="licitacion">Licitaciones / RFP</option>
+                                            <option value="interno">Proyectos Internos</option>
+                                            <option value="solucion">Soluciones</option>
+                                            <option value="piloto">Pilotos / PoC</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Resumen Ejecutivo / Alcance del Proyecto</label>
+                                        <textarea id="projDesc" rows="4" placeholder="Describa brevemente los objetivos estratégicos, entregables primordiales y tecnologías involucradas..." class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600 resize-none"></textarea>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
+                                            Enlace de Microsoft Planner o Repositorio
+                                        </label>
+                                        <input type="url" id="projPlanner" placeholder="https://planner.microsoft.com/..." class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                                            Enlace a Documento en SharePoint/OneDrive
+                                        </label>
+                                        <input type="url" id="projSharepoint" placeholder="https://...sharepoint.com/.../ProyectoX.docx" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-600">
+                                        <p class="text-[10px] text-slate-500 mt-1">Opcional: enlace directo al documento/carpeta del proyecto en OneDrive</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex flex-col sm:flex-row gap-3 mt-8">
+                                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl text-sm font-semibold text-white transition-all flex items-center justify-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        Registrar Iniciativa
+                                    </button>
+                                    <button type="button" onclick="App.navigate('projects')" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl text-sm transition-colors">
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDICIÓN DE PROYECTOS -->
+    <div id="editModal" class="hidden fixed inset-0 z-50 modal-overlay flex items-center justify-center p-4">
+        <div class="glass rounded-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto slide-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold text-white">Modificar Parámetros de Proyecto</h3>
+                <button onclick="App.closeEdit()" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <form id="editForm" onsubmit="return App.saveEdit(event)">
+                <input type="hidden" id="editId">
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre del Proyecto</label>
+                        <input type="text" id="editName" required class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Fecha Planificada</label>
+                            <input type="date" id="editDate" required class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Estado de Avance</label>
+                            <select id="editStatus" required class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200">
+                                <option value="abierto">Abierto</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="cerrado">Cerrado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Categoría TI</label>
+                        <select id="editCategory" required class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200">
+                            <option value="licitacion">Licitaciones / RFP</option>
+                            <option value="interno">Proyectos Internos</option>
+                            <option value="solucion">Soluciones</option>
+                            <option value="piloto">Pilotos / PoC</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Resumen Ejecutivo / Alcance del Proyecto</label>
+                        <textarea id="editDesc" rows="4" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200 resize-none"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
+                            Enlace Planner
+                        </label>
+                        <input type="url" id="editPlanner" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                            Enlace SharePoint/OneDrive
+                        </label>
+                        <input type="url" id="editSharepoint" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200">
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 mt-8">
+                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl text-sm font-semibold text-white transition-all">
+                        Guardar Cambios
+                    </button>
+                    <button type="button" onclick="App.closeEdit()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl text-sm transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: DETALLES EJECUTIVOS DEL PROYECTO -->
+    <div id="detailModal" class="hidden fixed inset-0 z-50 modal-overlay flex items-center justify-center p-4">
+        <div class="glass rounded-2xl p-6 md:p-8 w-full max-w-xl max-h-[90vh] overflow-y-auto slide-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold text-white">Resumen Técnico de Proyecto</h3>
+                <button onclick="App.closeDetail()" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="detailContent" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- MODAL CUSTOM: CONFIRMACIÓN DE ELIMINACIÓN -->
+    <div id="confirmModal" class="hidden fixed inset-0 z-[60] modal-overlay flex items-center justify-center p-4">
+        <div class="glass rounded-2xl p-6 w-full max-w-md slide-in border border-rose-500/20">
+            <div class="flex items-center gap-3.5 mb-4 text-rose-400">
+                <div class="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <h3 class="text-base font-bold text-white">¿Eliminar Iniciativa?</h3>
+            </div>
+            <p class="text-sm text-slate-300 leading-relaxed mb-6">Esta acción quitará permanentemente el proyecto del portafolio estratégico corporativo. No se puede deshacer.</p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="App.closeConfirm()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-colors">Cancelar</button>
+                <button onclick="App.executeDelete()" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-rose-900/30">Confirmar Eliminación</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: BÚSQUEDA ONEDRIVE LOCAL -->
+    <div id="onedriveModal" class="hidden fixed inset-0 z-50 modal-overlay flex items-center justify-center p-4">
+      <div class="glass rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto slide-in">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white">Proyectos con OneDrive</h3>
+              <p class="text-xs text-slate-400">Búsqueda local en proyectos registrados</p>
+            </div>
+          </div>
+          <button onclick="App.closeOneDriveSearch()" class="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Barra de Búsqueda -->
+        <div class="flex gap-2 mb-4">
+          <div class="relative flex-1">
+            <input type="text" id="onedriveSearchInput" placeholder="Buscar proyecto con enlace a OneDrive..." 
+                   class="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500"
+                   onkeypress="if(event.key==='Enter') App.executeOneDriveSearch()">
+            <svg class="w-4 h-4 absolute left-3 top-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <button onclick="App.executeOneDriveSearch()" class="px-5 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-semibold text-white transition-all flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            Buscar
+          </button>
+          <a href="https://atentoglobal-my.sharepoint.com/my?id=%2Fpersonal%2Fesuarezm%5Fcl%5Fatento%5Fcom%2FDocuments%2FMis%20Documentos%20Atento%2FPre%2DSales%20IT%2FProyectos&viewid=a52afe1c%2Df428%2D456f%2Db569%2Dfabb11a73186" 
+             target="_blank" 
+             class="px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-sm font-medium text-slate-300 hover:text-white transition-all flex items-center gap-2" 
+             title="Abrir carpeta en SharePoint">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+            <span class="hidden sm:inline">Carpeta</span>
+          </a>
+        </div>
+
+        <!-- Resultados -->
+        <div id="onedriveResults" class="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
+          <!-- Se llena dinámicamente -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="onedriveEmpty" class="hidden py-12 text-center">
+          <svg class="w-16 h-16 mx-auto text-slate-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <p class="text-slate-400 text-sm font-medium">No se encontraron proyectos con enlace a OneDrive</p>
+          <p class="text-slate-500 text-xs mt-1">Registra proyectos con el campo "Enlace SharePoint" o <a href="https://atentoglobal-my.sharepoint.com/my?id=%2Fpersonal%2Fesuarezm%5Fcl%5Fatento%5Fcom%2FDocuments%2FMis%20Documentos%20Atento%2FPre%2DSales%20IT%2FProyectos&viewid=a52afe1c%2Df428%2D456f%2Db569%2Dfabb11a73186" target="_blank" class="text-blue-400 hover:underline">explora la carpeta directamente</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="hidden fixed bottom-6 right-6 z-50 glass rounded-xl px-5 py-4 flex items-center gap-3.5 slide-in max-w-[calc(100vw-2rem)] shadow-2xl">
+        <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <span id="toastMsg" class="text-sm font-semibold text-slate-200"></span>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL -->
+    <script>
+    var App = {
+        projects: [],
+        charts: {},
+        sidebarClosed: false,
+        currentView: 'dashboard',
+        pendingDeleteId: null,
+
+        catMap: {
+            licitacion: { label: 'Licitación / RFP', cls: 'cat-licitacion', color: '#a78bfa', bg: 'bg-violet-500/10', txt: 'text-violet-400', border: 'border-violet-500/30' },
+            interno: { label: 'Proyecto Interno', cls: 'cat-interno', color: '#3b82f6', bg: 'bg-blue-500/10', txt: 'text-blue-400', border: 'border-blue-500/30' },
+            solucion: { label: 'Soluciones', cls: 'cat-solucion', color: '#06b6d4', bg: 'bg-cyan-500/10', txt: 'text-cyan-400', border: 'border-cyan-500/30' },
+            piloto: { label: 'Piloto / PoC', cls: 'cat-piloto', color: '#f59e0b', bg: 'bg-amber-500/10', txt: 'text-amber-400', border: 'border-amber-500/30' }
+        },
+
+        statMap: {
+            abierto: { label: 'Abierto', cls: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' },
+            pendiente: { label: 'Pendiente', cls: 'bg-amber-500/10 text-amber-400 border border-amber-500/20' },
+            cerrado: { label: 'Cerrado', cls: 'bg-rose-500/10 text-rose-400 border border-rose-500/20' }
+        },
+
+        el: function(id) { return document.getElementById(id); },
+
+        persist: function() {
+            localStorage.setItem('techProjects', JSON.stringify(App.projects));
+            var now = new Date();
+            App.el('lastUpdate').textContent = 'Actualizado: ' + now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        },
+
+        navigate: function(view) {
+            App.currentView = view;
+            var views = ['dashboard', 'projects', 'new'];
+            for (var i = 0; i < views.length; i++) {
+                App.el('view-' + views[i]).classList.add('hidden');
+                var navBtn = document.querySelector('[data-nav="' + views[i] + '"]');
+                if (navBtn) navBtn.classList.remove('nav-active');
+            }
+            App.el('view-' + view).classList.remove('hidden');
+            var activeNav = document.querySelector('[data-nav="' + view + '"]');
+            if (activeNav) activeNav.classList.add('nav-active');
+
+            var titles = { dashboard: 'Dashboard de Desempeño', projects: 'Portafolio de Iniciativas', new: 'Planificación de Iniciativa' };
+            App.el('pageTitle').textContent = titles[view];
+
+            if (view === 'dashboard') App.refreshDashboard();
+            if (view === 'projects') App.renderList();
+            if (window.innerWidth < 768) App.closeMobile();
+        },
+
+        toggleSidebar: function() {
+            App.sidebarClosed = !App.sidebarClosed;
+            localStorage.setItem('sidebarClosed', App.sidebarClosed);
+            App.applySidebar();
+        },
+
+        applySidebar: function() {
+            var sb = App.el('sidebar');
+            var arrow = App.el('toggleArrow');
+            if (window.innerWidth >= 768) {
+                if (App.sidebarClosed) {
+                    sb.classList.add('collapsed');
+                    arrow.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>';
+                } else {
+                    sb.classList.remove('collapsed');
+                    arrow.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>';
+                }
+            } else {
+                sb.classList.remove('collapsed');
+            }
+        },
+
+        openMobile: function() {
+            App.el('sidebar').classList.remove('collapsed');
+            App.el('mobileOverlay').classList.remove('hidden');
+        },
+
+        closeMobile: function() {
+            App.el('sidebar').classList.add('collapsed');
+            App.el('mobileOverlay').classList.add('hidden');
+        },
+
+        toast: function(msg) {
+            App.el('toastMsg').textContent = msg;
+            App.el('toast').classList.remove('hidden');
+            setTimeout(function() { App.el('toast').classList.add('hidden'); }, 3000);
+        },
+
+        escHtml: function(str) {
+            if (!str) return '';
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        },
+
+        fmtDate: function(ds) {
+            if (!ds) return '';
+            var parts = ds.split('-');
+            var months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+            return parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+        },
+
+        fmtDT: function(iso) {
+            if (!iso) return '';
+            var d = new Date(iso);
+            return App.fmtDate(d.toISOString().split('T')[0]) + ' ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        },
+
+        createProject: function(e) {
+            e.preventDefault();
+            App.projects.push({
+                id: Date.now().toString(),
+                name: App.el('projName').value.trim(),
+                date: App.el('projDate').value,
+                status: App.el('projStatus').value,
+                category: App.el('projCategory').value,
+                description: App.el('projDesc').value.trim(),
+                planner: App.el('projPlanner').value.trim(),
+                sharepointLink: App.el('projSharepoint').value.trim(),
+                createdAt: new Date().toISOString()
+            });
+            App.persist();
+            App.el('projectForm').reset();
+            App.el('projDate').valueAsDate = new Date();
+            App.toast('Iniciativa registrada de manera exitosa.');
+            App.navigate('projects');
+            return false;
+        },
+
+        deleteProject: function(id) {
+            App.pendingDeleteId = id;
+            App.el('confirmModal').classList.remove('hidden');
+        },
+
+        closeConfirm: function() {
+            App.pendingDeleteId = null;
+            App.el('confirmModal').classList.add('hidden');
+        },
+
+        executeDelete: function() {
+            if (App.pendingDeleteId) {
+                App.projects = App.projects.filter(function(p) { return p.id !== App.pendingDeleteId; });
+                App.persist();
+                App.renderList();
+                App.closeConfirm();
+                App.toast('Proyecto eliminado del portafolio.');
+            }
+        },
+
+        openEdit: function(id) {
+            var p = App.projects.find(function(x) { return x.id === id; });
+            if (!p) return;
+            App.el('editId').value = p.id;
+            App.el('editName').value = p.name;
+            App.el('editDate').value = p.date;
+            App.el('editStatus').value = p.status;
+            App.el('editCategory').value = p.category;
+            App.el('editDesc').value = p.description || '';
+            App.el('editPlanner').value = p.planner || '';
+            App.el('editSharepoint').value = p.sharepointLink || '';
+            App.el('editModal').classList.remove('hidden');
+        },
+
+        closeEdit: function() { App.el('editModal').classList.add('hidden'); },
+        closeDetail: function() { App.el('detailModal').classList.add('hidden'); },
+
+        saveEdit: function(e) {
+            e.preventDefault();
+            var id = App.el('editId').value;
+            var idx = App.projects.findIndex(function(p) { return p.id === id; });
+            if (idx === -1) return false;
+            
+            App.projects[idx].name = App.el('editName').value.trim();
+            App.projects[idx].date = App.el('editDate').value;
+            App.projects[idx].status = App.el('editStatus').value;
+            App.projects[idx].category = App.el('editCategory').value;
+            App.projects[idx].description = App.el('editDesc').value.trim();
+            App.projects[idx].planner = App.el('editPlanner').value.trim();
+            App.projects[idx].sharepointLink = App.el('editSharepoint').value.trim();
+            
+            App.persist();
+            App.closeEdit();
+            App.renderList();
+            App.toast('Iniciativa actualizada.');
+            return false;
+        },
+
+        viewProject: function(id) {
+            var p = App.projects.find(function(x) { return x.id === id; });
+            if (!p) return;
+            var c = App.catMap[p.category];
+            var s = App.statMap[p.status];
+            
+            var h = '<div class="space-y-4">';
+            h += '<div class="glass-light rounded-xl p-4 ' + c.cls + '"><h4 class="text-base font-bold text-white">' + App.escHtml(p.name) + '</h4>';
+            h += '<div class="flex flex-wrap gap-2 mt-2.5">';
+            h += '<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ' + s.cls + '">' + s.label + '</span>';
+            h += '<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ' + c.bg + ' ' + c.txt + '">' + c.label + '</span>';
+            h += '</div></div>';
+            
+            h += '<div class="grid grid-cols-2 gap-3">';
+            h += '<div class="glass-light rounded-xl p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Fecha Planificada</p><p class="text-sm font-semibold text-white mt-1">' + App.fmtDate(p.date) + '</p></div>';
+            h += '<div class="glass-light rounded-xl p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Registrado</p><p class="text-sm font-semibold text-slate-300 mt-1">' + App.fmtDT(p.createdAt) + '</p></div>';
+            h += '</div>';
+            
+            if (p.description) {
+                h += '<div class="glass-light rounded-xl p-3.5"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Resumen Ejecutivo</p><p class="text-xs text-slate-300 leading-relaxed">' + App.escHtml(p.description) + '</p></div>';
+            }
+            
+            if (p.planner) {
+                h += '<div class="glass-light rounded-xl p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Colaboración</p><a href="' + App.escHtml(p.planner) + '" target="_blank" class="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600/20 border border-blue-500/20 rounded-xl text-blue-400 text-xs font-semibold hover:bg-blue-600/30 transition-all">Acceder a Microsoft Planner ↗</a></div>';
+            }
+            
+            if (p.sharepointLink) {
+                h += '<div class="glass-light rounded-xl p-3"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Documento en OneDrive/SharePoint</p><a href="' + App.escHtml(p.sharepointLink) + '" target="_blank" class="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600/20 border border-blue-500/20 rounded-xl text-blue-400 text-xs font-semibold hover:bg-blue-600/30 transition-all">Abrir Documento ↗</a></div>';
+            }
+            
+            if (!p.planner && !p.sharepointLink) {
+                h += '<div class="glass-light rounded-xl p-3"><p class="text-xs text-slate-500 italic text-center">Sin enlaces de colaboración asignados</p></div>';
+            }
+            
+            h += '</div>';
+            
+            App.el('detailContent').innerHTML = h;
+            App.el('detailModal').classList.remove('hidden');
+        },
+
+        applyFilters: function() { App.renderList(); },
+
+        renderList: function() {
+            var search = App.el('searchInput').value.toLowerCase();
+            var fSt = App.el('filterEstado').value;
+            var fCat = App.el('filterCategory') ? App.el('filterCategory').value : App.el('filterCategoria').value;
+            var fOrd = App.el('filterOrden').value;
+
+            var filtered = App.projects.filter(function(p) {
+                var matchesSearch = !search || p.name.toLowerCase().indexOf(search) !== -1 || (p.description && p.description.toLowerCase().indexOf(search) !== -1);
+                return matchesSearch && (!fSt || p.status === fSt) && (!fCat || p.category === fCat);
+            });
+
+            filtered.sort(function(a, b) {
+                if (fOrd === 'fecha_desc') return new Date(b.date) - new Date(a.date);
+                if (fOrd === 'fecha_asc') return new Date(a.date) - new Date(b.date);
+                if (fOrd === 'nombre_asc') return a.name.localeCompare(b.name);
+                if (fOrd === 'nombre_desc') return b.name.localeCompare(a.name);
+                return 0;
+            });
+
+            // Desktop Table
+            var tbody = App.el('projectsTableBody');
+            var noDesk = App.el('noProjectsDesktop');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                noDesk.classList.remove('hidden');
+            } else {
+                noDesk.classList.add('hidden');
+                var rows = '';
+                for (var i = 0; i < filtered.length; i++) {
+                    var p = filtered[i];
+                    var c = App.catMap[p.category];
+                    var s = App.statMap[p.status];
+                    
+                    rows += '<tr class="border-b border-slate-800 hover:bg-slate-900/30 transition-colors ' + c.cls + '">';
+                    rows += '<td class="px-6 py-4.5"><div class="flex items-center gap-3 cursor-pointer" onclick="App.viewProject(\'' + p.id + '\')">';
+                    rows += '<div class="w-8 h-8 rounded-lg ' + c.bg + ' ' + c.border + ' border flex items-center justify-center flex-shrink-0"><span class="text-xs font-bold ' + c.txt + '">' + p.name.charAt(0).toUpperCase() + '</span></div>';
+                    rows += '<div class="min-w-0"><p class="font-semibold text-slate-100 hover:text-blue-400 transition-colors truncate max-w-xs">' + App.escHtml(p.name) + '</p>';
+                    if (p.description) rows += '<p class="text-xs text-slate-500 truncate max-w-xs mt-0.5">' + App.escHtml(p.description) + '</p>';
+                    rows += '</div></div></td>';
+                    rows += '<td class="px-6 py-4"><span class="text-xs font-semibold ' + c.txt + '">' + c.label + '</span></td>';
+                    rows += '<td class="px-6 py-4"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ' + s.cls + '">' + s.label + '</span></td>';
+                    rows += '<td class="px-6 py-4 text-slate-300 text-xs font-medium whitespace-nowrap">' + App.fmtDate(p.date) + '</td>';
+                    rows += '<td class="px-6 py-4">';
+                    if (p.planner || p.sharepointLink) {
+                        rows += '<div class="flex gap-1">';
+                        if (p.planner) rows += '<a href="' + App.escHtml(p.planner) + '" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-600/10 hover:bg-blue-600/20 rounded-lg text-blue-400 text-xs font-semibold transition-colors border border-blue-500/10">Planner ↗</a>';
+                        if (p.sharepointLink) rows += '<a href="' + App.escHtml(p.sharepointLink) + '" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-cyan-600/10 hover:bg-cyan-600/20 rounded-lg text-cyan-400 text-xs font-semibold transition-colors border border-cyan-500/10">OneDrive ↗</a>';
+                        rows += '</div>';
+                    } else rows += '<span class="text-slate-600 text-xs">—</span>';
+                    rows += '</td>';
+                    rows += '<td class="px-6 py-4"><div class="flex items-center justify-center gap-1">';
+                    rows += '<button onclick="App.openEdit(\'' + p.id + '\')" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Modificar"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>';
+                    rows += '<button onclick="App.deleteProject(\'' + p.id + '\')" class="p-2 text-rose-400/80 hover:text-rose-400 hover:bg-rose-500/15 rounded-lg transition-colors" title="Quitar"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>';
+                    rows += '</div></td></tr>';
+                }
+                tbody.innerHTML = rows;
+            }
+
+            // Mobile Cards
+            var cardsEl = App.el('projectsCards');
+            var noMob = App.el('noProjectsMobile');
+            if (filtered.length === 0) {
+                cardsEl.innerHTML = '';
+                noMob.classList.remove('hidden');
+            } else {
+                noMob.classList.add('hidden');
+                var cards = '';
+                for (var j = 0; j < filtered.length; j++) {
+                    var p2 = filtered[j];
+                    var c2 = App.catMap[p2.category];
+                    var s2 = App.statMap[p2.status];
+                    
+                    cards += '<div class="glass rounded-xl p-4 ' + c2.cls + ' card-hover">';
+                    cards += '<div class="flex items-start justify-between mb-3">';
+                    cards += '<div class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer" onclick="App.viewProject(\'' + p2.id + '\')">';
+                    cards += '<div class="w-10 h-10 rounded-lg ' + c2.bg + ' ' + c2.border + ' border flex items-center justify-center flex-shrink-0"><span class="text-sm font-bold ' + c2.txt + '">' + p2.name.charAt(0).toUpperCase() + '</span></div>';
+                    cards += '<div class="min-w-0"><h4 class="font-semibold text-slate-100 truncate hover:text-blue-400 transition-colors">' + App.escHtml(p2.name) + '</h4><p class="text-xs text-slate-400">' + App.fmtDate(p2.date) + '</p></div></div>';
+                    cards += '<div class="flex gap-1 ml-2 flex-shrink-0">';
+                    cards += '<button onclick="App.openEdit(\'' + p2.id + '\')" class="p-1.5 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>';
+                    cards += '<button onclick="App.deleteProject(\'' + p2.id + '\')" class="p-1.5 hover:bg-rose-500/10 rounded-lg transition-colors text-rose-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>';
+                    cards += '</div></div>';
+                    cards += '<div class="flex flex-wrap gap-1.5 mb-3">';
+                    cards += '<span class="px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider ' + s2.cls + '">' + s2.label + '</span>';
+                    cards += '<span class="px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider ' + c2.bg + ' ' + c2.txt + '">' + c2.label + '</span>';
+                    cards += '</div>';
+                    if (p2.description) cards += '<p class="text-xs text-slate-400 mb-3.5 line-clamp-2">' + App.escHtml(p2.description) + '</p>';
+                    cards += '<div class="flex gap-2">';
+                    cards += '<button onclick="App.viewProject(\'' + p2.id + '\')" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold transition-colors text-center text-slate-200">Ver Ficha Técnica</button>';
+                    if (p2.sharepointLink) cards += '<a href="' + App.escHtml(p2.sharepointLink) + '" target="_blank" class="flex-1 py-2 bg-cyan-600/10 border border-cyan-500/10 rounded-lg text-xs font-semibold text-cyan-400 hover:bg-cyan-600/20 transition-colors text-center">OneDrive ↗</a>';
+                    else if (p2.planner) cards += '<a href="' + App.escHtml(p2.planner) + '" target="_blank" class="flex-1 py-2 bg-blue-600/10 border border-blue-500/10 rounded-lg text-xs font-semibold text-blue-400 hover:bg-blue-600/20 transition-colors text-center">Planner ↗</a>';
+                    cards += '</div></div>';
+                }
+                cardsEl.innerHTML = cards;
+            }
+        },
+
+        refreshDashboard: function() {
+            var total = App.projects.length;
+            var ab = App.projects.filter(function(p) { return p.status === 'abierto'; }).length;
+            var pe = App.projects.filter(function(p) { return p.status === 'pendiente'; }).length;
+            var ce = App.projects.filter(function(p) { return p.status === 'cerrado'; }).length;
+            
+            App.el('kpiTotal').textContent = total;
+            App.el('kpiAbiertos').textContent = ab;
+            App.el('kpiPendientes').textContent = pe;
+            App.el('kpiCerrados').textContent = ce;
+            
+            App.drawCharts();
+        },
+
+        drawCharts: function() {
+            var baseOpts = {
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { 
+                        labels: { 
+                            color: '#94a3b8', 
+                            font: { size: 11, weight: '500' } 
+                        } 
+                    } 
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { size: 10, weight: '500' } }, grid: { color: 'rgba(51, 65, 85, 0.15)' } },
+                    y: { ticks: { color: '#64748b', font: { size: 10, weight: '500' } }, grid: { color: 'rgba(51, 65, 85, 0.15)' } }
+                }
+            };
+
+            // Reconstrucción limpia de gráficos
+            Object.keys(App.charts).forEach(function(key) { App.charts[key].destroy(); });
+            App.charts = {};
+
+            // 1. Estados (Doughnut)
+            var sc = ['abierto','pendiente','cerrado'].map(function(s) { return App.projects.filter(function(p) { return p.status === s; }).length; });
+            App.charts.estado = new Chart(App.el('chartEstado'), {
+                type: 'doughnut',
+                data: { 
+                    labels: ['Abiertos','Pendientes','Cerrados'], 
+                    datasets: [{ 
+                        data: sc, 
+                        backgroundColor: ['#10b981','#f59e0b','#f43f5e'], 
+                        borderWidth: 0, 
+                        hoverOffset: 8 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            position: 'right', 
+                            labels: { color: '#e2e8f0', padding: 16, font: { size: 12, weight: '600' } } 
+                        } 
+                    }, 
+                    cutout: '75%' 
+                }
+            });
+
+            // 2. Volumen por Categoría (Bar)
+            var catKeys = Object.keys(App.catMap);
+            var cl = catKeys.map(function(k) { return App.catMap[k].label; });
+            var cc = catKeys.map(function(k) { return App.catMap[k].color; });
+            var projectsPerCat = catKeys.map(function(k) {
+                return App.projects.filter(function(p) { return p.category === k; }).length;
+            });
+
+            App.charts.categoria = new Chart(App.el('chartCategoria'), {
+                type: 'bar',
+                data: { 
+                    labels: cl, 
+                    datasets: [{ 
+                        data: projectsPerCat, 
+                        backgroundColor: cc.map(function(c) { return c + '40'; }), 
+                        borderColor: cc, 
+                        borderWidth: 1.5, 
+                        borderRadius: 10, 
+                        barThickness: 32 
+                    }] 
+                },
+                options: Object.assign({}, baseOpts, { 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) { return ' Cantidad: ' + context.raw + ' proyecto(s)'; }
+                            }
+                        }
+                    }, 
+                    scales: Object.assign({}, baseOpts.scales, { 
+                        y: Object.assign({}, baseOpts.scales.y, { 
+                            beginAtZero: true, 
+                            ticks: { 
+                                color: '#64748b',
+                                stepSize: 1
+                            } 
+                        }) 
+                    }) 
+                })
+            });
+
+            // 3. Matriz Categoría x Estado (Stacked Bar)
+            var statuses = ['abierto','pendiente','cerrado'];
+            var dd = statuses.map(function(s, i) {
+                var colors = ['#10b981', '#f59e0b', '#f43f5e'];
+                return { 
+                    label: App.statMap[s].label, 
+                    data: catKeys.map(function(k) { return App.projects.filter(function(p) { return p.category === k && p.status === s; }).length; }), 
+                    backgroundColor: colors[i] + '35', 
+                    borderColor: colors[i], 
+                    borderWidth: 1.5, 
+                    borderRadius: 6 
+                };
+            });
+            App.charts.distribucion = new Chart(App.el('chartDistribucion'), {
+                type: 'bar',
+                data: { 
+                    labels: catKeys.map(function(k) { return App.catMap[k].label; }), 
+                    datasets: dd 
+                },
+                options: Object.assign({}, baseOpts, { 
+                    plugins: { 
+                        legend: { position: 'top', labels: { color: '#94a3b8', font: { size: 10, weight: '600' } } } 
+                    }, 
+                    scales: Object.assign({}, baseOpts.scales, { 
+                        x: Object.assign({}, baseOpts.scales.x, { stacked: true }),
+                        y: Object.assign({}, baseOpts.scales.y, { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }) 
+                    }) 
+                })
+            });
+        },
+
+        // --- MÓDULO ONEDRIVE LOCAL (100% CLIENT-SIDE) ---
+        openOneDriveSearch: function() {
+          App.el('onedriveSearchInput').value = '';
+          App.el('onedriveResults').innerHTML = '';
+          App.el('onedriveEmpty').classList.add('hidden');
+          App.el('onedriveModal').classList.remove('hidden');
+          setTimeout(() => App.el('onedriveSearchInput').focus(), 100);
+          App.executeOneDriveSearch();
+        },
+
+        closeOneDriveSearch: function() {
+          App.el('onedriveModal').classList.add('hidden');
+        },
+
+        executeOneDriveSearch: function() {
+          const query = App.el('onedriveSearchInput').value.trim().toLowerCase();
+          
+          const results = App.projects.filter(p => {
+            const hasLink = p.sharepointLink && p.sharepointLink.trim() !== '';
+            if (!hasLink) return false;
+            if (!query) return true;
+            return p.name.toLowerCase().includes(query) || 
+                   (p.description && p.description.toLowerCase().includes(query)) ||
+                   p.category.toLowerCase().includes(query);
+          });
+          
+          App.renderOneDriveResults(results, query ? `Resultados para "${query}"` : 'Todos los proyectos con enlace a OneDrive');
+        },
+
+        renderOneDriveResults: function(results, subtitle) {
+          const container = App.el('onedriveResults');
+          const emptyEl = App.el('onedriveEmpty');
+          
+          if (!results || results.length === 0) {
+            emptyEl.classList.remove('hidden');
+            container.innerHTML = '';
+            return;
+          }
+          
+          emptyEl.classList.add('hidden');
+          
+          let html = `<div class="mb-3 pb-3 border-b border-slate-800">
+            <p class="text-xs font-semibold text-slate-400">${subtitle} • ${results.length} proyecto(s)</p>
+          </div>`;
+          
+          results.forEach(p => {
+            const c = App.catMap[p.category];
+            const s = App.statMap[p.status];
+            
+            html += `
+            <div class="glass-light rounded-xl p-4 card-hover border border-slate-800/50 ${c.cls}">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3 min-w-0 flex-1 cursor-pointer" onclick="App.viewProject('${p.id}')">
+                  <div class="w-10 h-10 rounded-lg ${c.bg} ${c.border} border flex items-center justify-center flex-shrink-0">
+                    <span class="text-sm font-bold ${c.txt}">${p.name.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h4 class="font-semibold text-slate-100 truncate hover:text-blue-400 transition-colors" title="${App.escHtml(p.name)}">${App.escHtml(p.name)}</h4>
+                    <div class="flex flex-wrap gap-1.5 mt-1">
+                      <span class="px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider ${s.cls}">${s.label}</span>
+                      <span class="px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider ${c.bg} ${c.txt}">${c.label}</span>
+                    </div>
+                    ${p.description ? `<p class="text-xs text-slate-500 mt-1 line-clamp-1">${App.escHtml(p.description)}</p>` : ''}
+                  </div>
+                </div>
+                <div class="flex gap-1.5 flex-shrink-0">
+                  <a href="${App.escHtml(p.sharepointLink)}" target="_blank" class="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-lg transition-colors" title="Abrir documento en OneDrive">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  </a>
+                  <button onclick="App.viewProject('${p.id}')" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Ver ficha del proyecto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>`;
+          });
+          
+          container.innerHTML = html;
+        },
+
+        init: function() {
+            App.sidebarClosed = localStorage.getItem('sidebarClosed') === 'true';
+            App.projects = JSON.parse(localStorage.getItem('techProjects') || '[]');
+
+            if (App.projects.length === 0) {
+                // Dataset Estratégico de Demostración para IT
+                App.projects = [
+                    { id: '1', name: 'Migración e Integración Cloud AWS (Fase 2)', date: '2026-06-15', status: 'abierto', category: 'solucion', description: 'Migración y arquitectura de switches core y servidores on-premise a infraestructura de nube híbrida en AWS.', planner: 'https://planner.microsoft.com', sharepointLink: 'https://atentoglobal-my.sharepoint.com/:w:/g/personal/esuarezm_cl_atento_com/EbXyZ/Migracion_AWS_Fase2.docx', createdAt: '2026-05-20T10:00:00Z' },
+                    { id: '2', name: 'RFP Renovación de Core Network Nacional', date: '2026-07-01', status: 'pendiente', category: 'licitacion', description: 'Licitación pública para actualización de switches perimetrales y seguridad perimetral corporativa.', planner: '', sharepointLink: 'https://atentoglobal-my.sharepoint.com/:f:/g/personal/esuarezm_cl_atento_com/EcDef/RFP_Core_Network', createdAt: '2026-05-22T09:30:00Z' },
+                    { id: '3', name: 'Automatización y Monitoreo SD-WAN Meraki', date: '2026-06-30', status: 'abierto', category: 'interno', description: 'Despliegue de scripts en Python utilizando la API de Cisco Meraki para monitoreo proactivo de enlaces MPLS/LTE.', planner: 'https://planner.microsoft.com', sharepointLink: '', createdAt: '2026-05-24T14:00:00Z' },
+                    { id: '4', name: 'Piloto Telefonía IP Genesys Cloud', date: '2026-08-05', status: 'abierto', category: 'piloto', description: 'PoC de integración de colas de preventa y call center omnicanal sobre infraestructura Genesys Cloud.', planner: '', sharepointLink: 'https://atentoglobal-my.sharepoint.com/:b:/g/personal/esuarezm_cl_atento_com/EgHij/Piloto_Genesys_Specs.pdf', createdAt: '2026-05-25T11:00:00Z' },
+                    { id: '5', name: 'RFI Sistema ERP SAP S/4HANA', date: '2026-04-10', status: 'cerrado', category: 'licitacion', description: 'Recepción y análisis de requerimientos técnicos preliminares para implementación de ERP SAP.', planner: 'https://planner.microsoft.com', sharepointLink: '', createdAt: '2026-04-01T08:00:00Z' }
+                ];
+                App.persist();
+            }
+
+            App.applySidebar();
+            App.el('projDate').valueAsDate = new Date();
+            App.navigate('dashboard');
+
+            // Event Listeners para cerrar modales al hacer clic fuera
+            App.el('editModal').addEventListener('click', function(e) { if (e.target === App.el('editModal')) App.closeEdit(); });
+            App.el('detailModal').addEventListener('click', function(e) { if (e.target === App.el('detailModal')) App.closeDetail(); });
+            App.el('confirmModal').addEventListener('click', function(e) { if (e.target === App.el('confirmModal')) App.closeConfirm(); });
+            App.el('onedriveModal').addEventListener('click', function(e) { if (e.target === App.el('onedriveModal')) App.closeOneDriveSearch(); });
+            App.el('mobileOverlay').addEventListener('click', function() { App.closeMobile(); });
+
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 768) App.el('mobileOverlay').classList.add('hidden');
+                App.applySidebar();
+            });
+
+            // Timer de refresco de UI de Sincronización
+            setInterval(function() {
+                var now = new Date();
+                App.el('lastUpdate').textContent = 'Actualizado: ' + now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }, 30000);
+        }
+    };
+
+    // Inicialización de la aplicación
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', App.init);
+    } else {
+        App.init();
+    }
+    </script>
+</body>
+</html>
